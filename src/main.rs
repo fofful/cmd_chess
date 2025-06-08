@@ -89,20 +89,34 @@ fn main() {
         }
 
         let mut char_vec: Vec<char> = input.chars().collect();
-        let transformed_vec: Vec<u8> = char_vec
+        let transformed_vec: Vec<usize> = char_vec
             .iter_mut()
             .map(|c|{
             if c.is_alphabetic(){
-                *c as u8 - 48
+                *c as usize - 48
             } else if c.is_whitespace(){
-                *c as u8
+                *c as usize
             } 
             else {
-                c.to_string().parse::<u8>().unwrap()
+                c.to_string().parse::<usize>().unwrap()
             }
         }).collect();
         let move_from = (transformed_vec[0], transformed_vec[1]);
         let move_to = (transformed_vec[3], transformed_vec[4]);
+
+        //validate move_from position
+        if !pawns.iter()
+                .any(|p| move_from == *p.get_position() && board.get_player_turn() == p.get_color()){
+                    println!("Invalid move_from position");
+                    continue
+                };
+
+        //valdiate move_to position
+        if !pawns.iter()
+                .any(|p| move_to == *p.get_position() && board.get_player_turn() != p.get_color()){
+                    println!("Invalid move_to position");
+                    continue
+                };
 
         //switch turn
         if board.get_player_turn() == "blue"{
