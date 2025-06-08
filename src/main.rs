@@ -75,7 +75,7 @@ fn main() {
     board.draw_board(&pawns);
     pawns[0].set_alive(false);
     board.draw_board(&pawns);
-    let re = Regex::new(r"[A-H][1-8] [A-H][1-8]").unwrap();
+    
 
     //game loop
     while board.get_game_ended() == false{
@@ -83,17 +83,21 @@ fn main() {
         let mut input = String::new();
         io::stdin().read_line(&mut input).expect("failed to read input");
         println!("entry: {}", input.trim());
+
+        //input validation
+        let re = Regex::new(r"[A-H][1-8] [A-H][1-8]").unwrap();
         if !re.is_match(input.as_str()){
             println!("Wrong input format.");
             continue
         }
 
+        //input transformation
         let mut char_vec: Vec<char> = input.chars().collect();
         let transformed_vec: Vec<usize> = char_vec
             .iter_mut()
             .map(|c|{
             if c.is_alphabetic(){
-                *c as usize - 48
+                (*c as u8 - b'A' + 1) as usize
             } else if c.is_whitespace(){
                 *c as usize
             } 
@@ -104,19 +108,30 @@ fn main() {
         let move_from = (transformed_vec[0], transformed_vec[1]);
         let move_to = (transformed_vec[3], transformed_vec[4]);
 
+        println!("this is the move_from: {:#?}", move_from);
+        println!("this is the move_to: {:#?}", move_to);
+
+        pawns.iter().for_each(|p| println!(" these are the positions: {:#?}", p.get_position()));
         //validate move_from position
         if !pawns.iter()
-                .any(|p| move_from == *p.get_position() && board.get_player_turn() == p.get_color()){
+                .any(|p| move_from == *p.get_position() && board.get_player_turn() == p.get_player()){
                     println!("Invalid move_from position");
                     continue
                 };
 
-        //valdiate move_to position
+        //validate move_to position (need to rethink)
         if !pawns.iter()
-                .any(|p| move_to == *p.get_position() && board.get_player_turn() != p.get_color()){
+                .any(|p| move_to == *p.get_position() && board.get_player_turn() != p.get_player()){
                     println!("Invalid move_to position");
                     continue
                 };
+        
+
+        if let Some(found_pawn) = pawns.iter_mut().find(|p| *p.get_position() == move_from){
+            found_pawn.set_position(move_to)
+        };
+
+        board.draw_board(&pawns);
 
         //switch turn
         if board.get_player_turn() == "blue"{
