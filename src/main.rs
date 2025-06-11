@@ -97,12 +97,12 @@ fn main() {
             .iter_mut()
             .map(|c|{
             if c.is_alphabetic(){
-                (*c as u8 - b'A' + 1) as usize
+                (*c as u8 - b'A') as usize
             } else if c.is_whitespace(){
                 *c as usize
             } 
             else {
-                c.to_string().parse::<usize>().unwrap()
+                (*c as u8 - 49) as usize
             }
         }).collect();
         let move_from = (transformed_vec[0], transformed_vec[1]);
@@ -111,7 +111,6 @@ fn main() {
         println!("this is the move_from: {:#?}", move_from);
         println!("this is the move_to: {:#?}", move_to);
 
-        pawns.iter().for_each(|p| println!(" these are the positions: {:#?}", p.get_position()));
         //validate move_from position
         if !pawns.iter()
                 .any(|p| move_from == *p.get_position() && board.get_player_turn() == p.get_player()){
@@ -126,11 +125,14 @@ fn main() {
                     continue
                 };
         
-
-        if let Some(found_pawn) = pawns.iter_mut().find(|p| *p.get_position() == move_from){
-            found_pawn.set_position(move_to)
+        if let Some(found_pawn) = pawns.iter_mut().find(|p| *p.get_position() == move_to){
+            found_pawn.set_alive(false);
         };
-
+        if let Some(found_pawn) = pawns.iter_mut().find(|p| *p.get_position() == move_from){
+            found_pawn.set_position(move_to);
+        };
+        
+        pawns.iter().for_each(|p| println!("{:#?}", p));
         board.draw_board(&pawns);
 
         //switch turn
